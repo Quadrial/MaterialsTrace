@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FaPlusCircle, FaRoad } from "react-icons/fa";
+import { FaPlusCircle, FaRoad, FaCamera } from "react-icons/fa";
 import { ethers } from "ethers";
+import { NavLink } from "react-router-dom";
+import { createWallet, inAppWallet } from "thirdweb/wallets";
+import { ConnectButton } from "thirdweb/react";
+import { client } from "../../client";
+import { sepolia } from "thirdweb/chains";
 
 // Placeholder token data with image URLs (replace with IPFS links or contract data later)
 const initialTokens = [
@@ -46,6 +51,21 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const recommendedWallets = [
+    createWallet("io.metamask"),
+    createWallet("phantom"),
+  ];
+
+  const wallets = [
+    inAppWallet({
+      auth: { options: ["google", "apple", "x", "email"] },
+    }),
+    createWallet("io.metamask"),
+    createWallet("app.phantom"),
+    createWallet("io.coinbase"),
+    createWallet("app.backpack"),
+  ];
+
   return (
     <div className="p-4 text-gray-200 min-h-screen">
       {/* Header */}
@@ -54,22 +74,52 @@ const Dashboard = () => {
           Dashboard
         </h1>
         <div className="flex items-center gap-4">
-          <span className="hidden md:flex">Connected: 0x123...abc</span>{" "}
+          
           {/* Replace with MetaMask address */}
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-            Connect Wallet
+          <button className="text-white px-4 py-2 rounded">
+            <ConnectButton
+              client={client}
+              chain={sepolia}
+              wallets={wallets}
+              recommendedWallets={recommendedWallets}
+              connectModal={{
+                size: "wide",
+                title: "Welcome to SnapLens",
+                titleIcon: (
+                  <div className="bg-green-100 p-2 rounded-full inline-block">
+                    <FaCamera className="text-green-600" />
+                  </div>
+                ),
+                description: "Choose your preferred login method to continue",
+                showThirdwebBranding: false,
+              }}
+              connectButton={{
+                label: (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="hidden sm:inline">Connect Wallet</span>
+                    <span className="sm:hidden">Connect</span>
+                  </span>
+                ),
+                className:
+                  "w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-md hover:shadow-lg",
+              }}
+            />
           </button>
         </div>
       </div>
 
       {/* Action Buttons */}
       <div className="flex gap-4 mb-6">
-        <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-          <FaPlusCircle /> Mint New Token
-        </button>
-        <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-          <FaRoad /> Track Supply Chain
-        </button>
+        <NavLink to="/mint-token">
+          <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            <FaPlusCircle /> Mint New Token
+          </button>
+        </NavLink>
+        <NavLink to="/track-supply-chain">
+          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            <FaRoad /> Track Supply Chain
+          </button>
+        </NavLink>
       </div>
 
       {/* Token Grid (NFT Marketplace Style with Images) */}

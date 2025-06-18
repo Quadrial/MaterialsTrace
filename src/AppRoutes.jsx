@@ -7,6 +7,8 @@ import TrackSupplyChain from "./pages/TrackSupplyChain/TrackSupplyChain";
 import MyTokens from "./pages/MyTokens/MyTokens";
 import Settings from "./pages/Settings/Settings";
 import TransferHistory from "./pages/TransferHistory/TransferHistory";
+import VerificationRequest from "./components/VerificationRequest";
+import AdminDashboard from "./components/AdminDashboard";
 
 const AppRoutes = () => {
   return (
@@ -18,6 +20,8 @@ const AppRoutes = () => {
       <Route path="/my-tokens" element={<MyTokens />} />
       <Route path="/transfer-history" element={<TransferHistory />} />
       <Route path="/settings" element={<Settings />} />
+      <Route path="/verification-request" element={<VerificationRequest />} />
+      <Route path="/admin-dashboard" element={<AdminDashboard />} />
     </Routes>
   );
 };
