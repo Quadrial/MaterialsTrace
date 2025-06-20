@@ -225,7 +225,9 @@ const Sidebar = () => {
 
   // Replace this with your actual deployer address
   // This should be the wallet address that deployed the contract, not the contract address
-  const DEPLOYER_ADDRESS = "0xEDf4364Ca6AA3e6702DaB8b16eb63cc61B649EDD";
+  // const DEPLOYER_ADDRESS = "0xEDf4364Ca6AA3e6702DaB8b16eb63cc61B649EDD";
+    const DEPLOYER_ADDRESS = "0x94a049C1CBD9AFAc99D7da46a6D7911440E2920B";
+  
 
   // Debugging useEffect
   useEffect(() => {
