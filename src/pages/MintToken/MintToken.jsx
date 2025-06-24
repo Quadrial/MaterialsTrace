@@ -136,247 +136,6 @@
 
 // export default MintToken;
 
-// import React, { useState } from "react";
-// import { motion } from "framer-motion";
-
-// import {
-//   useActiveAccount,
-//   useConnect,
-//   useReadContract,
-//   useSendTransaction,
-// } from "thirdweb/react";
-// import { prepareContractCall } from "thirdweb";
-// import { client } from "../../client";
-// import { sepolia } from "thirdweb/chains";
-// import { getContract } from "thirdweb";
-// import { upload } from "thirdweb/storage";
-
-// const contractAddress = "0x6B89D3Da93924BA2d12D12071263C53041587f5E";
-// const contractABI = [
-//   {
-//     type: "function",
-//     name: "mintMaterial",
-//     inputs: [
-//       { name: "to", type: "address" },
-//       { name: "amount", type: "uint256" },
-//       { name: "metadata", type: "string" },
-//     ],
-//     outputs: [],
-//     stateMutability: "nonpayable",
-//   },
-//   {
-//     type: "function",
-//     name: "balanceOf",
-//     inputs: [
-//       { name: "account", type: "address" },
-//       { name: "id", type: "uint256" },
-//     ],
-//     outputs: [{ name: "", type: "uint256" }],
-//     stateMutability: "view",
-//   },
-//   {
-//     type: "error",
-//     name: "InvalidTokenId",
-//     inputs: [],
-//   },
-// ];
-
-// const MintToken = () => {
-//   const [metadata, setMetadata] = useState({
-//     type: "",
-//     weight: "",
-//     purity: "",
-//     origin: "",
-//   });
-//   const [amount, setAmount] = useState(1);
-//   const [image, setImage] = useState(null);
-//   const [message, setMessage] = useState("");
-//   const [isLoading, setIsLoading] = useState(false);
-//   const account = useActiveAccount();
-//   const { connect } = useConnect();
-
-//   // Initialize Thirdweb v5 contract
-//   const contract = getContract({
-//     client,
-//     chain: sepolia,
-//     address: contractAddress,
-//     abi: contractABI,
-//   });
-
-//   // Read balance using useReadContract
-//   const {
-//     data: balance,
-//     isLoading: balanceLoading,
-//     error: balanceError,
-//   } = useReadContract({
-//     contract,
-//     method: "balanceOf",
-//     params: [account?.address, 1], // Assuming tokenId starts at 1
-//   });
-
-//   // Prepare transaction for minting
-//   const { mutateAsync: sendTransaction, isPending } = useSendTransaction();
-
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setMetadata((prev) => ({ ...prev, [name]: value }));
-//   };
-
-//   const handleAmountChange = (e) => {
-//     setAmount(e.target.value);
-//   };
-
-//   const handleImageChange = (e) => {
-//     setImage(e.target.files[0]);
-//   };
-
-//   const handleMint = async () => {
-//     if (!account) {
-//       setMessage("Please connect your wallet first");
-//       connect({ client, chain: sepolia });
-//       return;
-//     }
-
-//     if (!image) {
-//       setMessage("Please upload an image");
-//       return;
-//     }
-
-//     try {
-//       setIsLoading(true);
-//       // Upload image to Thirdweb Storage
-//       console.log("Uploading to Thirdweb Storage...");
-//       const uri = await upload({
-//         client,
-//         files: [image], // Directly use the File object from input
-//       });
-//       console.log("Uploaded URI:", uri);
-
-//       // Construct metadata with Thirdweb Storage URI
-//       const fullMetadata = {
-//         ...metadata,
-//         image: uri, // Thirdweb Storage returns an IPFS URI (e.g., ipfs://CID)
-//       };
-//       const metadataString = JSON.stringify(fullMetadata);
-
-//       // Prepare and send mint transaction
-//       const tx = prepareContractCall({
-//         contract,
-//         method: "mintMaterial",
-//         params: [account.address, amount, metadataString],
-//       });
-
-//       setMessage("Minting...");
-//       const receipt = await sendTransaction(tx);
-//       setMessage(`Minted successfully! TX: ${receipt.transactionHash}`);
-
-//       // Balance is updated automatically via useReadContract
-//       if (balance) {
-//         setMessage(`Minted successfully! Balance: ${balance.toString()}`);
-//       }
-//     } catch (error) {
-//       setMessage("Error minting: " + error.message);
-//       console.error("Storage/Mint Error:", error);
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="p-4 bg-gray-900 text-gray-200 min-h-screen md:ml-64">
-//       <motion.h1
-//         className="text-3xl font-bold text-blue-400 mb-6"
-//         initial={{ opacity: 0, y: -20 }}
-//         animate={{ opacity: 1, y: 0 }}
-//         transition={{ duration: 0.5 }}
-//       >
-//         Mint Token
-//       </motion.h1>
-//       {balanceError && (
-//         <p className="text-red-400">Error: {balanceError.message}</p>
-//       )}
-//       {balance && !balanceLoading && (
-//         <p className="text-green-400">Current Balance: {balance.toString()}</p>
-//       )}
-//       <div className="bg-gray-800 p-4 rounded-lg space-y-4">
-//         <input
-//           type="text"
-//           name="type"
-//           placeholder="Type (e.g., Steel)"
-//           value={metadata.type}
-//           onChange={handleChange}
-//           className="w-full p-2 bg-gray-700 rounded"
-//         />
-//         <input
-//           type="text"
-//           name="weight"
-//           placeholder="Weight (e.g., 1000kg)"
-//           value={metadata.weight}
-//           onChange={handleChange}
-//           className="w-full p-2 bg-gray-700 rounded"
-//         />
-//         <input
-//           type="text"
-//           name="purity"
-//           placeholder="Purity (e.g., 99.5)"
-//           value={metadata.purity}
-//           onChange={handleChange}
-//           className="w-full p-2 bg-gray-700 rounded"
-//         />
-//         <input
-//           type="text"
-//           name="origin"
-//           placeholder="Origin (e.g., Nigeria)"
-//           value={metadata.origin}
-//           onChange={handleChange}
-//           className="w-full p-2 bg-gray-700 rounded"
-//         />
-//         <input
-//           type="number"
-//           value={amount}
-//           onChange={handleAmountChange}
-//           min="1"
-//           className="w-full p-2 bg-gray-700 rounded"
-//           placeholder="Amount"
-//         />
-//         <input
-//           type="file"
-//           accept="image/*"
-//           onChange={handleImageChange}
-//           className="w-full p-2 bg-gray-700 rounded"
-//         />
-//         <button
-//           onClick={handleMint}
-//           disabled={isLoading || isPending}
-//           className={`bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-md hover:shadow-lg w-full ${
-//             isLoading || isPending ? "opacity-50 cursor-not-allowed" : ""
-//           }`}
-//         >
-//           {isLoading || isPending ? "Processing..." : "Mint Token"}
-//         </button>
-//         {message && <p className="mt-2 text-green-400">{message}</p>}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default MintToken;
-
-// import React, { useState } from "react";
-// import { motion } from "framer-motion";
-
-// import {
-//   useActiveAccount,
-//   useConnect,
-//   useReadContract,
-//   useSendTransaction,
-// } from "thirdweb/react";
-// import { prepareContractCall } from "thirdweb";
-// import { client } from "../../client";
-// import { sepolia } from "thirdweb/chains";
-// import { getContract } from "thirdweb";
-// import { upload } from "thirdweb/storage";
-
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -389,6 +148,7 @@ import { getContract } from "thirdweb";
 import { prepareContractCall } from "thirdweb";
 import { client } from "../../client";
 import { sepolia } from "thirdweb/chains";
+import MintingPage from "./MintingPage";
 
 // Predefined materials with image URLs (store images in src/assets/materials/)
 const materials = [
@@ -572,135 +332,140 @@ const MintToken = () => {
   };
 
   return (
-    <div className="p-4 bg-gray-900 text-gray-200 min-h-screen md:ml">
-      <motion.h1
-        className="text-3xl font-bold text-blue-400 mb-6"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        Mint Material Token
-      </motion.h1>
-      {balanceError && (
-        <p className="text-red-400">Error: {balanceError.message}</p>
-      )}
-      {balance && !balanceLoading && (
-        <p className="text-green-400">Current Balance: {balance.toString()}</p>
-      )}
-      <div className="bg-gray-800 p-4 rounded-lg space-y-4">
-        {/* Material Selection */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+    <>
+      <div className="p-4 bg-gray-900 text-gray-200 min-h-screen md:ml">
+        <motion.h1
+          className="text-3xl font-bold text-blue-400 mb-6"
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <label className="block text-gray-400 mb-1">Select Material</label>
-          <select
-            value={selectedMaterial}
-            onChange={handleMaterialChange}
-            className="w-full p-2 bg-gray-700 rounded"
-          >
-            {materials.map((material) => (
-              <option key={material.name} value={material.name}>
-                {material.name}
-              </option>
-            ))}
-          </select>
-          <img
-            src={materials.find((m) => m.name === selectedMaterial).image}
-            alt={selectedMaterial}
-            className="w-24 h-24 object-cover rounded mt-2"
-          />
-        </motion.div>
-
-        {/* Metadata Inputs */}
-        {["type", "weight", "purity", "origin"].map((field, index) => (
+          Mint Material Token
+        </motion.h1>
+        {balanceError && (
+          <p className="text-red-400">Error: {balanceError.message}</p>
+        )}
+        {balance && !balanceLoading && (
+          <p className="text-green-400">
+            Current Balance: {balance.toString()}
+          </p>
+        )}
+        <div className="bg-gray-800 p-4 rounded-lg space-y-4">
+          {/* Material Selection */}
           <motion.div
-            key={field}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
+            transition={{ duration: 0.5 }}
           >
-            <input
-              type="text"
-              name={field}
-              placeholder={
-                field.charAt(0).toUpperCase() +
-                field.slice(1) +
-                (field === "weight"
-                  ? " (e.g., 1000kg)"
-                  : field === "purity"
-                  ? " (e.g., 99.5%)"
-                  : field === "origin"
-                  ? " (e.g., Nigeria)"
-                  : "")
-              }
-              value={metadata[field]}
-              onChange={handleChange}
+            <label className="block text-gray-400 mb-1">Select Material</label>
+            <select
+              value={selectedMaterial}
+              onChange={handleMaterialChange}
               className="w-full p-2 bg-gray-700 rounded"
+            >
+              {materials.map((material) => (
+                <option key={material.name} value={material.name}>
+                  {material.name}
+                </option>
+              ))}
+            </select>
+            <img
+              src={materials.find((m) => m.name === selectedMaterial).image}
+              alt={selectedMaterial}
+              className="w-24 h-24 object-cover rounded mt-2"
             />
           </motion.div>
-        ))}
 
-        {/* Amount Input */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <input
-            type="number"
-            value={amount}
-            onChange={handleAmountChange}
-            min="1"
-            className="w-full p-2 bg-gray-700 rounded"
-            placeholder="Amount"
-          />
-        </motion.div>
+          {/* Metadata Inputs */}
+          {["type", "weight", "purity", "origin"].map((field, index) => (
+            <motion.div
+              key={field}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <input
+                type="text"
+                name={field}
+                placeholder={
+                  field.charAt(0).toUpperCase() +
+                  field.slice(1) +
+                  (field === "weight"
+                    ? " (e.g., 1000kg)"
+                    : field === "purity"
+                    ? " (e.g., 99.5%)"
+                    : field === "origin"
+                    ? " (e.g., Nigeria)"
+                    : "")
+                }
+                value={metadata[field]}
+                onChange={handleChange}
+                className="w-full p-2 bg-gray-700 rounded"
+              />
+            </motion.div>
+          ))}
 
-        {/* Chainlink Price Feed */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-        >
-          <p className="text-gray-400">
-            {priceLoading
-              ? "Loading..."
-              : `Current ${selectedMaterial} Price: $${(price / 1e8).toFixed(
-                  2
-                )}/ton`}
-          </p>
-        </motion.div>
+          {/* Amount Input */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <input
+              type="number"
+              value={amount}
+              onChange={handleAmountChange}
+              min="1"
+              className="w-full p-2 bg-gray-700 rounded"
+              placeholder="Amount"
+            />
+          </motion.div>
 
-        {/* Mint Button */}
-        <motion.button
-          onClick={handleMint}
-          disabled={isLoading || isPending}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className={`bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-md hover:shadow-lg w-full ${
-            isLoading || isPending ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          {isLoading || isPending ? "Processing..." : "Mint Token"}
-        </motion.button>
+          {/* Chainlink Price Feed */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <p className="text-gray-400">
+              {priceLoading
+                ? "Loading..."
+                : `Current ${selectedMaterial} Price: $${(price / 1e8).toFixed(
+                    2
+                  )}/ton`}
+            </p>
+          </motion.div>
 
-        {/* Message */}
-        {message && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className={`mt-2 ${
-              message.includes("Error") ? "text-red-400" : "text-green-400"
+          {/* Mint Button */}
+          <motion.button
+            onClick={handleMint}
+            disabled={isLoading || isPending}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className={`bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-md hover:shadow-lg w-full ${
+              isLoading || isPending ? "opacity-50 cursor-not-allowed" : ""
             }`}
           >
-            {message}
-          </motion.p>
-        )}
+            {isLoading || isPending ? "Processing..." : "Mint Token"}
+          </motion.button>
+
+          {/* Message */}
+          {message && (
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={`mt-2 ${
+                message.includes("Error") ? "text-red-400" : "text-green-400"
+              }`}
+            >
+              {message}
+            </motion.p>
+          )}
+        </div>
       </div>
-    </div>
+      
+    </>
   );
 };
 
